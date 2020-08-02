@@ -1,6 +1,0 @@
-{
-    "variants": {
-        "type=liquid": { "model":"astralsorcery:blockborehead_liquid" },
-        "type=vortex": { "model":"astralsorcery:blockborehead_bubble" }
-    }
-}

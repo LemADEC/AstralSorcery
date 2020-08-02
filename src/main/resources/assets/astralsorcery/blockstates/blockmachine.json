@@ -1,6 +1,0 @@
-{
-    "variants": {
-        "machine=telescope": { "model":"astralsorcery:blockmodel_nothing_telescope" },
-        "machine=grindstone": { "model":"astralsorcery:blockmodel_nothing_grindstone" }
-    }
-}

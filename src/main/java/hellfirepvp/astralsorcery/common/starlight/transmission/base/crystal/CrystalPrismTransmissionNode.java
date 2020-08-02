@@ -1,5 +1,5 @@
 /*******************************************************************************
- * HellFirePvP / Astral Sorcery 2018
+ * HellFirePvP / Astral Sorcery 2020
  *
  * All rights reserved.
  * The source code is available on github: https://github.com/HellFirePvP/AstralSorcery
@@ -8,14 +8,12 @@
 
 package hellfirepvp.astralsorcery.common.starlight.transmission.base.crystal;
 
-import hellfirepvp.astralsorcery.AstralSorcery;
-import hellfirepvp.astralsorcery.common.item.crystal.CrystalProperties;
-import hellfirepvp.astralsorcery.common.starlight.transmission.IPrismTransmissionNode;
+import hellfirepvp.astralsorcery.common.crystal.CrystalAttributes;
 import hellfirepvp.astralsorcery.common.starlight.transmission.base.SimplePrismTransmissionNode;
-import hellfirepvp.astralsorcery.common.starlight.transmission.registry.TransmissionClassRegistry;
-import hellfirepvp.astralsorcery.common.tile.network.TileCrystalLens;
+import hellfirepvp.astralsorcery.common.starlight.transmission.registry.TransmissionProvider;
+import hellfirepvp.astralsorcery.common.tile.TilePrism;
 import hellfirepvp.astralsorcery.common.util.MiscUtils;
-import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 
@@ -28,12 +26,12 @@ import net.minecraft.world.World;
  */
 public class CrystalPrismTransmissionNode extends SimplePrismTransmissionNode {
 
-    private CrystalProperties properties;
+    private CrystalAttributes attributes;
     private float additionalLoss = 1F;
 
-    public CrystalPrismTransmissionNode(BlockPos thisPos, CrystalProperties properties) {
+    public CrystalPrismTransmissionNode(BlockPos thisPos, CrystalAttributes attributes) {
         super(thisPos);
-        this.properties = properties;
+        this.attributes = attributes;
     }
 
     public CrystalPrismTransmissionNode(BlockPos thisPos) {
@@ -47,9 +45,9 @@ public class CrystalPrismTransmissionNode extends SimplePrismTransmissionNode {
 
     @Override
     public void onTransmissionTick(World world) {
-        TileCrystalLens lens = MiscUtils.getTileAt(world, getPos(), TileCrystalLens.class, false);
-        if(lens != null) {
-            lens.onTransmissionTick();
+        TilePrism prism = MiscUtils.getTileAt(world, getLocationPos(), TilePrism.class, false);
+        if (prism != null) {
+            prism.transmissionTick();
         }
     }
 
@@ -63,42 +61,39 @@ public class CrystalPrismTransmissionNode extends SimplePrismTransmissionNode {
     }
 
     @Override
-    public CrystalProperties getTransmissionProperties() {
-        return properties;
+    public CrystalAttributes getTransmissionProperties() {
+        return attributes;
     }
 
     @Override
-    public TransmissionClassRegistry.TransmissionProvider getProvider() {
+    public TransmissionProvider getProvider() {
         return new Provider();
     }
 
 
     @Override
-    public void readFromNBT(NBTTagCompound compound) {
+    public void readFromNBT(CompoundNBT compound) {
         super.readFromNBT(compound);
 
-        this.properties = CrystalProperties.readFromNBT(compound);
+        this.attributes = CrystalAttributes.getCrystalAttributes(compound);
         this.additionalLoss = compound.getFloat("lossMultiplier");
     }
 
     @Override
-    public void writeToNBT(NBTTagCompound compound) {
+    public void writeToNBT(CompoundNBT compound) {
         super.writeToNBT(compound);
 
-        this.properties.writeToNBT(compound);
-        compound.setFloat("lossMultiplier", this.additionalLoss);
+        if (this.attributes != null) {
+            this.attributes.store(compound);
+        }
+        compound.putFloat("lossMultiplier", this.additionalLoss);
     }
 
-    public static class Provider implements TransmissionClassRegistry.TransmissionProvider {
+    public static class Provider extends TransmissionProvider {
 
         @Override
-        public IPrismTransmissionNode provideEmptyNode() {
+        public CrystalPrismTransmissionNode get() {
             return new CrystalPrismTransmissionNode(null);
-        }
-
-        @Override
-        public String getIdentifier() {
-            return AstralSorcery.MODID + ":CrystalPrismTransmissionNode";
         }
 
     }

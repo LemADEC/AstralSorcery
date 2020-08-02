@@ -1,5 +1,5 @@
 /*******************************************************************************
- * HellFirePvP / Astral Sorcery 2018
+ * HellFirePvP / Astral Sorcery 2020
  *
  * All rights reserved.
  * The source code is available on github: https://github.com/HellFirePvP/AstralSorcery
@@ -8,12 +8,14 @@
 
 package hellfirepvp.astralsorcery.client;
 
-import hellfirepvp.astralsorcery.common.auxiliary.tick.ITickHandler;
 import hellfirepvp.astralsorcery.common.util.Counter;
-import hellfirepvp.astralsorcery.common.util.data.Tuple;
-import net.minecraftforge.fml.common.gameevent.TickEvent;
+import hellfirepvp.observerlib.common.util.tick.ITickHandler;
+import net.minecraft.util.Tuple;
+import net.minecraftforge.event.TickEvent;
 
-import java.util.*;
+import java.util.EnumSet;
+import java.util.Iterator;
+import java.util.LinkedList;
 
 /**
  * This class is part of the Astral Sorcery Mod
@@ -41,15 +43,15 @@ public class ClientScheduler implements ITickHandler {
             Iterator<Tuple<Runnable, Counter>> iterator = queue.iterator();
             while (iterator.hasNext()) {
                 Tuple<Runnable, Counter> r = iterator.next();
-                r.value.decrement();
-                if(r.value.value <= 0) {
-                    r.key.run();
+                r.getB().decrement();
+                if (r.getB().getValue() <= 0) {
+                    r.getA().run();
                     iterator.remove();
                 }
             }
             inTick = false;
             for (Tuple<Runnable, Integer> wait : waiting) {
-                queue.addLast(new Tuple<>(wait.key, new Counter(wait.value)));
+                queue.addLast(new Tuple<>(wait.getA(), new Counter(wait.getB())));
             }
         }
         waiting.clear();
@@ -57,6 +59,10 @@ public class ClientScheduler implements ITickHandler {
 
     public static long getClientTick() {
         return clientTick;
+    }
+
+    public static long getSystemClientTick() {
+        return System.currentTimeMillis() / 50;
     }
 
     @Override
@@ -76,7 +82,7 @@ public class ClientScheduler implements ITickHandler {
 
     public void addRunnable(Runnable r, int tickDelay) {
         synchronized (lock) {
-            if(inTick) {
+            if (inTick) {
                 waiting.addLast(new Tuple<>(r, tickDelay));
             } else {
                 queue.addLast(new Tuple<>(r, new Counter(tickDelay)));

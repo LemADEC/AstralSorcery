@@ -1,5 +1,5 @@
 /*******************************************************************************
- * HellFirePvP / Astral Sorcery 2018
+ * HellFirePvP / Astral Sorcery 2020
  *
  * All rights reserved.
  * The source code is available on github: https://github.com/HellFirePvP/AstralSorcery
@@ -8,14 +8,15 @@
 
 package hellfirepvp.astralsorcery.common.data.research;
 
-import com.google.common.collect.Lists;
 import hellfirepvp.astralsorcery.common.constellation.IMajorConstellation;
-import hellfirepvp.astralsorcery.common.constellation.perk.AbstractPerk;
-import hellfirepvp.astralsorcery.common.item.tool.sextant.SextantFinder;
+import hellfirepvp.astralsorcery.common.perk.AbstractPerk;
+import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.nbt.CompoundNBT;
+import net.minecraft.util.ResourceLocation;
 
+import javax.annotation.Nullable;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 
 /**
  * This class is part of the Astral Sorcery Mod
@@ -27,23 +28,38 @@ import java.util.Map;
 public class PlayerProgressTestAccess extends PlayerProgress {
 
     @Override
+    public boolean isValid() {
+        return false;
+    }
+
+    @Override
     public List<ResearchProgression> getResearchProgression() {
-        return Lists.newArrayList();
+        return Collections.emptyList();
     }
 
     @Override
-    public List<String> getSeenConstellations() {
-        return Lists.newArrayList();
+    public List<ResourceLocation> getSeenConstellations() {
+        return Collections.emptyList();
     }
 
     @Override
-    public List<String> getKnownConstellations() {
-        return Lists.newArrayList();
+    public List<ResourceLocation> getKnownConstellations() {
+        return Collections.emptyList();
     }
 
     @Override
     public double getPerkExp() {
         return 0;
+    }
+
+    @Override
+    public int getPerkLevel(PlayerEntity player) {
+        return 0;
+    }
+
+    @Override
+    public float getPercentToNextLevel(PlayerEntity player) {
+        return 0F;
     }
 
     @Override
@@ -58,19 +74,27 @@ public class PlayerProgressTestAccess extends PlayerProgress {
 
     @Override
     public List<AbstractPerk> getAppliedPerks() {
-        return Lists.newArrayList();
+        return Collections.emptyList();
     }
 
     @Override
-    public List<SextantFinder.TargetObject> getUsedTargets() {
-        return Lists.newArrayList();
+    public List<AbstractPerk> getSealedPerks() {
+        return Collections.emptyList();
+    }
+
+    @Nullable
+    @Override
+    public CompoundNBT getPerkData(AbstractPerk perk) {
+        return null;
     }
 
     @Override
-    public void useTarget(SextantFinder.TargetObject target) {}
+    public boolean hasSeenConstellation(ResourceLocation constellation) {
+        return false;
+    }
 
     @Override
-    public boolean hasConstellationDiscovered(String constellation) {
+    public boolean hasConstellationDiscovered(ResourceLocation constellation) {
         return false;
     }
 
@@ -81,16 +105,16 @@ public class PlayerProgressTestAccess extends PlayerProgress {
 
     @Override
     public List<String> getFreePointTokens() {
-        return Lists.newArrayList();
+        return Collections.emptyList();
     }
 
     @Override
-    public int getAvailablePerkPoints() {
+    public int getAvailablePerkPoints(PlayerEntity player) {
         return 0;
     }
 
     @Override
-    public boolean hasFreeAllocationPoint() {
+    public boolean hasFreeAllocationPoint(PlayerEntity player) {
         return false;
     }
 
@@ -100,8 +124,22 @@ public class PlayerProgressTestAccess extends PlayerProgress {
     }
 
     @Override
+    public boolean isPerkSealed(AbstractPerk perk) {
+        return true;
+    }
+
+    @Override
     public boolean wasOnceAttuned() {
         return false;
     }
 
+    @Override
+    public boolean didReceiveTome() {
+        return true; //Fake players always did get the tome already.
+    }
+
+    @Override
+    public boolean doPerkAbilities() {
+        return false;
+    }
 }

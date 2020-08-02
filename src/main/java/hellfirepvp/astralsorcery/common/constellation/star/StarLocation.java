@@ -1,5 +1,5 @@
 /*******************************************************************************
- * HellFirePvP / Astral Sorcery 2018
+ * HellFirePvP / Astral Sorcery 2020
  *
  * All rights reserved.
  * The source code is available on github: https://github.com/HellFirePvP/AstralSorcery
@@ -7,6 +7,8 @@
  ******************************************************************************/
 
 package hellfirepvp.astralsorcery.common.constellation.star;
+
+import java.awt.*;
 
 /**
  * This class is part of the Astral Sorcery Mod
@@ -26,6 +28,10 @@ public class StarLocation {
 
     public int getDistanceToOrigin() {
         return x + y;
+    }
+
+    public Point asPoint() {
+        return new Point(x, y);
     }
 
     @Override

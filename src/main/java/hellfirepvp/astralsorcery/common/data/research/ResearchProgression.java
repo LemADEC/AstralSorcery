@@ -1,5 +1,5 @@
 /*******************************************************************************
- * HellFirePvP / Astral Sorcery 2018
+ * HellFirePvP / Astral Sorcery 2020
  *
  * All rights reserved.
  * The source code is available on github: https://github.com/HellFirePvP/AstralSorcery
@@ -8,9 +8,16 @@
 
 package hellfirepvp.astralsorcery.common.data.research;
 
+import com.google.common.collect.Lists;
 import hellfirepvp.astralsorcery.AstralSorcery;
+import net.minecraft.util.text.ITextComponent;
+import net.minecraft.util.text.TranslationTextComponent;
+import net.minecraftforge.common.IExtensibleEnum;
 
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.util.*;
+import java.util.function.Consumer;
 
 /**
  * This class is part of the Astral Sorcery Mod
@@ -19,61 +26,61 @@ import java.util.*;
  * Created by HellFirePvP
  * Date: 10.08.2016 / 13:38
  */
-public enum ResearchProgression {
+public enum ResearchProgression implements IExtensibleEnum {
 
-    DISCOVERY(0, ProgressionTier.DISCOVERY),
-    BASIC_CRAFT(1, ProgressionTier.BASIC_CRAFT, DISCOVERY),
-    ATTUNEMENT(2, ProgressionTier.ATTUNEMENT, BASIC_CRAFT),
-    CONSTELLATION(3, ProgressionTier.CONSTELLATION_CRAFT, ATTUNEMENT),
-    RADIANCE(4, ProgressionTier.TRAIT_CRAFT, CONSTELLATION),
+    DISCOVERY(ProgressionTier.DISCOVERY),
+    BASIC_CRAFT(ProgressionTier.BASIC_CRAFT, DISCOVERY),
+    ATTUNEMENT(ProgressionTier.ATTUNEMENT, BASIC_CRAFT),
+    CONSTELLATION(ProgressionTier.CONSTELLATION_CRAFT, ATTUNEMENT),
+    RADIANCE(ProgressionTier.TRAIT_CRAFT, CONSTELLATION),
+    BRILLIANCE(ProgressionTier.BRILLIANCE, RADIANCE)
     ;
 
-    private final int progressId;
     private List<ResearchProgression> preConditions = new LinkedList<>();
     private List<ResearchNode> researchNodes = new LinkedList<>();
     private final ProgressionTier requiredProgress;
     private final String unlocName;
 
-    private static final Map<Integer, ResearchProgression> BY_ID = new HashMap<>();
-    private static final Map<String, ResearchProgression> BY_NAME = new HashMap<>();
-
-    private ResearchProgression(int id, ProgressionTier requiredProgress, ResearchProgression... preConditions) {
-        this(id, requiredProgress, Arrays.asList(preConditions));
+    private ResearchProgression(ProgressionTier requiredProgress, ResearchProgression... preConditions) {
+        this(requiredProgress, Arrays.asList(preConditions));
     }
 
-    private ResearchProgression(int id, ProgressionTier requiredProgress, List<ResearchProgression> preConditions) {
+    private ResearchProgression(ProgressionTier requiredProgress, List<ResearchProgression> preConditions) {
         this.preConditions.addAll(preConditions);
         this.requiredProgress = requiredProgress;
-        this.progressId = id;
-        this.unlocName = AstralSorcery.MODID + ".journal.cluster." + name().toLowerCase() + ".name";
+        this.unlocName = AstralSorcery.MODID + ".journal.research." + name().toLowerCase();
+    }
+
+    public Consumer<ResearchNode> getRegistrar() {
+        return this::addResearchToGroup;
     }
 
     void addResearchToGroup(ResearchNode res) {
         for (ResearchNode node : researchNodes) {
-            if(node.renderPosX == res.renderPosX &&
+            if (node.renderPosX == res.renderPosX &&
                     node.renderPosZ == res.renderPosZ) {
                 throw new IllegalArgumentException("Tried to register 2 Research Nodes at the same position at x=" + res.renderPosX + ", z=" + res.renderPosZ + "! " +
-                        "Present: " + node.getUnLocalizedName() + " - Tried to set: " + res.getUnLocalizedName());
+                        "Present: " + node.getKey() + " - Tried to set: " + res.getKey());
             }
         }
         this.researchNodes.add(res);
+    }
+
+    public static ResearchProgression create(String name, ProgressionTier tier, List<ResearchProgression> preConditions) {
+        throw new IllegalStateException("Enum not extended");
     }
 
     public List<ResearchNode> getResearchNodes() {
         return researchNodes;
     }
 
-    public Registry getRegistry() {
-        return new Registry(this);
-    }
-
-    /*public boolean tryStepTo(EntityPlayer player, boolean force) {
+    /*public boolean tryStepTo(PlayerEntity player, boolean force) {
         return (force || canStepTo(player)) && ResearchManager.forceUnsafeResearchStep(player, this);
     }
 
-    public boolean canStepTo(EntityPlayer player) {
+    public boolean canStepTo(PlayerEntity player) {
         PlayerProgress progress = ResearchManager.getProgress(player);
-        if(progress == null) return false;
+        if (progress == null) return false;
         List<ResearchProgression> playerResearchProgression = progress.getResearchProgression();
         ProgressionTier playerTier = progress.getTierReached();
         return playerTier.isThisLaterOrEqual(requiredProgress) && playerResearchProgression.containsAll(preConditions);
@@ -87,41 +94,30 @@ public enum ResearchProgression {
         return Collections.unmodifiableList(preConditions);
     }
 
-    public String getUnlocalizedName() {
-        return unlocName;
+    public ITextComponent getName() {
+        return new TranslationTextComponent(this.unlocName);
     }
 
-    public int getProgressId() {
-        return progressId;
-    }
-
-    public static ResearchProgression getById(int id) {
-        return BY_ID.get(id);
-    }
-
-    public static ResearchProgression getByEnumName(String name) {
-        return BY_NAME.get(name);
-    }
-
-    static {
-        for (ResearchProgression progress : values()) {
-            BY_ID.put(progress.progressId, progress);
-            BY_NAME.put(progress.name(), progress);
+    @Nullable
+    public static ResearchNode findNode(String name) {
+        for (ResearchProgression prog : values()) {
+            for (ResearchNode node : prog.getResearchNodes()) {
+                if (node.getKey().equals(name)) {
+                    return node;
+                }
+            }
         }
+        return null;
     }
 
-    public static class Registry {
-
-        private final ResearchProgression prog;
-
-        public Registry(ResearchProgression prog) {
-            this.prog = prog;
+    @Nonnull
+    public static Collection<ResearchProgression> findProgression(ResearchNode n) {
+        Collection<ResearchProgression> progressions = Lists.newArrayList();
+        for (ResearchProgression prog : values()) {
+            if (prog.getResearchNodes().contains(n)) {
+                progressions.add(prog);
+            }
         }
-
-        public void register(ResearchNode node) {
-            prog.addResearchToGroup(node);
-        }
-
+        return progressions;
     }
-
 }

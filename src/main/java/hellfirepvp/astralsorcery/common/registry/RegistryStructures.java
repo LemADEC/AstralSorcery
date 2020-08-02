@@ -1,5 +1,5 @@
 /*******************************************************************************
- * HellFirePvP / Astral Sorcery 2018
+ * HellFirePvP / Astral Sorcery 2020
  *
  * All rights reserved.
  * The source code is available on github: https://github.com/HellFirePvP/AstralSorcery
@@ -8,45 +8,43 @@
 
 package hellfirepvp.astralsorcery.common.registry;
 
-import hellfirepvp.astralsorcery.common.lib.BlocksAS;
-import hellfirepvp.astralsorcery.common.registry.multiblock.*;
-import hellfirepvp.astralsorcery.common.registry.structures.*;
-import hellfirepvp.astralsorcery.common.util.struct.PatternBlockArray;
+import hellfirepvp.astralsorcery.AstralSorcery;
+import hellfirepvp.astralsorcery.common.structure.*;
+import hellfirepvp.observerlib.api.structure.MatchableStructure;
+import hellfirepvp.observerlib.api.util.PatternBlockArray;
+import hellfirepvp.observerlib.common.change.ObserverProviderStructure;
 
-import static hellfirepvp.astralsorcery.common.lib.MultiBlockArrays.*;
+import static hellfirepvp.astralsorcery.common.lib.StructuresAS.*;
 
 /**
  * This class is part of the Astral Sorcery Mod
  * The complete source code for this mod can be found on github.
  * Class: RegistryStructures
  * Created by HellFirePvP
- * Date: 16.05.2016 / 15:45
+ * Date: 09.07.2019 / 19:36
  */
 public class RegistryStructures {
 
+    private RegistryStructures() {}
+
     public static void init() {
-        ancientShrine = new StructureAncientShrine();
-        desertShrine = new StructureDesertShrine();
-        smallShrine = new StructureSmallShrine();
-        treasureShrine = new StructureTreasureShrine();
-        smallRuin = new StructureSmallRuin();
+        EMPTY = register(new PatternBlockArray(AstralSorcery.key("empty")));
 
-        patternRitualPedestal = new MultiblockRitualPedestal();
-        patternAltarAttunement = new MultiblockAltarAttunement();
-        patternAltarConstellation = new MultiblockAltarConstellation();
-        patternAltarTrait = new MultiblockAltarTrait();
-        patternAttunementFrame = new MultiblockAttunementFrame();
-        patternStarlightInfuser = new MultiblockStarlightInfuser();
-        patternCollectorRelay = new MultiblockStarlightRelay();
-        patternCelestialGateway = new MultiblockGateway();
-        patternCollectorEnhancement = new MultiblockCrystalEnhancement();
-        patternFountain = new MultiblockFountain();
+        STRUCT_ALTAR_ATTUNEMENT = register(new PatternAltarAttunement());
+        STRUCT_ALTAR_CONSTELLATION = register(new PatternAltarConstellation());
+        STRUCT_ALTAR_TRAIT = register(new PatternAltarTrait());
+        STRUCT_RITUAL_PEDESTAL = register(new PatternRitualPedestal());
+        STRUCT_INFUSER = register(new PatternInfuser());
+        STRUCT_ENHANCED_COLLECTOR_CRYSTAL = register(new PatternEnhancedCollectorCrystal());
+        STRUCT_SPECTRAL_RELAY = register(new PatternSpectralRelay());
+        STRUCT_ATTUNEMENT_ALTAR = register(new PatternAttunementAltar());
+    }
 
-        patternSmallRuin = new PatternBlockArray();
-        patternSmallRuin.addAll(smallRuin);
-
-        patternRitualPedestalWithLink = new MultiblockRitualPedestal();
-        patternRitualPedestalWithLink.addBlock(0, 5, 0, BlocksAS.ritualLink.getDefaultState());
+    private static <T extends MatchableStructure> T register(T struct) {
+        AstralSorcery.getProxy().getRegistryPrimer().register(struct);
+        ObserverProviderStructure structureProvider = new ObserverProviderStructure(struct.getRegistryName());
+        AstralSorcery.getProxy().getRegistryPrimer().register(structureProvider);
+        return struct;
     }
 
 }
